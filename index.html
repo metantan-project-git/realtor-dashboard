@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>부동산 중개사 대시보드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .filters {
+            padding: 20px;
+            background: #fafafa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .reset-btn {
+            padding: 10px 20px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .reset-btn:active {
+            transform: scale(0.98);
+        }
+
+        .list-container {
+            overflow-x: auto;
+        }
+
+        .realtor-list {
+            list-style: none;
+        }
+
+        .realtor-card {
+            padding: 16px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.2s;
+        }
+
+        .realtor-card:hover {
+            background: #f9f9f9;
+        }
+
+        .realtor-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .realtor-name {
+            font-weight: 600;
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .realtor-rep {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .realtor-stats {
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .stat-deal {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .stat-lease {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .stat-rent {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .realtor-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .btn-sms {
+            padding: 10px 16px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        .btn-sms:active {
+            background: #45a049;
+        }
+
+        .btn-sms.disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .sort-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: #f5f5f5;
+            border-bottom: 2px solid #667eea;
+            font-weight: 600;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .sort-btn {
+            cursor: pointer;
+            user-select: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .sort-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .sort-btn.active {
+            color: #667eea;
+        }
+
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .realtor-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .realtor-actions {
+                width: 100%;
+            }
+
+            .btn-sms {
+                width: 100%;
+                text-align: center;
+            }
+
+            .sort-header {
+                font-size: 11px;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>부동산 중개사 대시보드</h1>
+            <div class="stats">
+                <div>총 <span id="totalCount">0</span>명</div>
+                <div>표시 <span id="displayCount">0</span>명</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>매매 건수</label>
+                <div class="filter-buttons">
+                    <button class="filter-btn" data-filter="deal" data-value="0">전체</button>
+                    <button class="filter-btn" data-filter="deal" data-value="1">1+</button>
+                    <button class="filter-btn" data-filter="deal" data-value="10">10+</button>
+                    <button class="filter-btn" data-filter="deal" data-value="50">50+</button>
+                    <button class="filter-btn" data-filter="deal" data-value="100">100+</button>
+                    <button class="filter-btn" data-filter="deal" data-value="200">200+</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label>전세 건수</label>
+                <div class="filter-buttons">
+                    <button class="filter-btn" data-filter="lease" data-value="0">전체</button>
+                    <button class="filter-btn" data-filter="lease" data-value="1">1+</button>
+                    <button class="filter-btn" data-filter="lease" data-value="10">10+</button>
+                    <button class="filter-btn" data-filter="lease" data-value="20">20+</button>
+                    <button class="filter-btn" data-filter="lease" data-value="50">50+</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label>월세 건수</label>
+                <div class="filter-buttons">
+                    <button class="filter-btn" data-filter="rent" data-value="0">전체</button>
+                    <button class="filter-btn" data-filter="rent" data-value="1">1+</button>
+                    <button class="filter-btn" data-filter="rent" data-value="10">10+</button>
+                    <button class="filter-btn" data-filter="rent" data-value="20">20+</button>
+                    <button class="filter-btn" data-filter="rent" data-value="50">50+</button>
+                </div>
+            </div>
+
+            <button class="reset-btn" id="resetBtn">필터 초기화</button>
+        </div>
+
+        <div class="sort-header">
+            <div class="sort-btn" data-sort="name">이름 ↕</div>
+            <div class="sort-btn active" data-sort="deal">매매 ↓</div>
+            <div class="sort-btn" data-sort="lease">전세 ↕</div>
+            <div class="sort-btn" data-sort="rent">월세 ↕</div>
+        </div>
+
+        <div class="list-container">
+            <ul class="realtor-list" id="realtorList"></ul>
+        </div>
+    </div>
+
+    <script>
+        let realtors = [];
+        let filteredRealtors = [];
+        let filters = {
+            deal: 0,
+            lease: 0,
+            rent: 0
+        };
+        let sortBy = 'deal';
+        let sortOrder = -1; // -1 for desc, 1 for asc
+
+        // Load data
+        fetch('browser_progress.json')
+            .then(res => res.json())
+            .then(data => {
+                realtors = data;
+                filteredRealtors = [...realtors];
+                document.getElementById('totalCount').textContent = realtors.length;
+                render();
+            })
+            .catch(err => {
+                console.error('Error loading data:', err);
+                document.getElementById('realtorList').innerHTML =
+                    '<div class="empty-state">데이터를 불러올 수 없습니다.</div>';
+            });
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const filterType = btn.dataset.filter;
+                const value = parseInt(btn.dataset.value);
+
+                // Toggle active state
+                document.querySelectorAll(`[data-filter="${filterType}"]`).forEach(b => {
+                    b.classList.remove('active');
+                });
+                btn.classList.add('active');
+
+                filters[filterType] = value;
+                applyFilters();
+            });
+        });
+
+        // Reset button
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            filters = { deal: 0, lease: 0, rent: 0 };
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            applyFilters();
+        });
+
+        // Sort buttons
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const newSort = btn.dataset.sort;
+
+                if (sortBy === newSort) {
+                    sortOrder *= -1; // Toggle order
+                } else {
+                    sortBy = newSort;
+                    sortOrder = -1; // Default to desc
+                }
+
+                document.querySelectorAll('.sort-btn').forEach(b => {
+                    b.classList.remove('active');
+                });
+                btn.classList.add('active');
+
+                // Update arrow
+                const arrow = sortOrder === -1 ? '↓' : '↑';
+                btn.textContent = btn.textContent.replace(/[↕↓↑]/, arrow);
+
+                render();
+            });
+        });
+
+        function applyFilters() {
+            filteredRealtors = realtors.filter(r => {
+                const dealOk = (r.dealCount || 0) >= filters.deal;
+                const leaseOk = (r.leaseCount || 0) >= filters.lease;
+                const rentOk = (r.rentCount || 0) >= filters.rent;
+                return dealOk && leaseOk && rentOk;
+            });
+            render();
+        }
+
+        function render() {
+            // Sort
+            const sorted = [...filteredRealtors].sort((a, b) => {
+                let aVal, bVal;
+
+                switch(sortBy) {
+                    case 'name':
+                        aVal = a.realtorName || '';
+                        bVal = b.realtorName || '';
+                        return sortOrder * aVal.localeCompare(bVal, 'ko');
+                    case 'deal':
+                        return sortOrder * ((b.dealCount || 0) - (a.dealCount || 0));
+                    case 'lease':
+                        return sortOrder * ((b.leaseCount || 0) - (a.leaseCount || 0));
+                    case 'rent':
+                        return sortOrder * ((b.rentCount || 0) - (a.rentCount || 0));
+                    default:
+                        return 0;
+                }
+            });
+
+            document.getElementById('displayCount').textContent = sorted.length;
+
+            const listEl = document.getElementById('realtorList');
+
+            if (sorted.length === 0) {
+                listEl.innerHTML = '<div class="empty-state">조건에 맞는 중개사가 없습니다.</div>';
+                return;
+            }
+
+            listEl.innerHTML = sorted.map(r => {
+                const phone = r.cellPhoneNo || r.representativeTelNo;
+                const phoneForSMS = phone ? phone.replace(/[^0-9]/g, '') : '';
+                const hasSMS = phoneForSMS.length >= 10;
+
+                return `
+                    <li class="realtor-card">
+                        <div class="realtor-info">
+                            <div class="realtor-name">${r.realtorName || '-'}</div>
+                            ${r.representativeName ? `<div class="realtor-rep">${r.representativeName}</div>` : ''}
+                            <div class="realtor-stats">
+                                <span class="stat-badge stat-deal">매매 ${r.dealCount || 0}</span>
+                                ${r.leaseCount ? `<span class="stat-badge stat-lease">전세 ${r.leaseCount}</span>` : ''}
+                                ${r.rentCount ? `<span class="stat-badge stat-rent">월세 ${r.rentCount}</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="realtor-actions">
+                            ${hasSMS
+                                ? `<a href="sms:${phoneForSMS}" class="btn-sms">문자 보내기</a>`
+                                : `<button class="btn-sms disabled" disabled>번호 없음</button>`
+                            }
+                        </div>
+                    </li>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>
